@@ -1,3 +1,4 @@
+import 'package:country_app/core/route/route_names.dart';
 import 'package:country_app/feauters/country/presentation/manager/all_country_provider/all_country_provider.dart';
 import 'package:country_app/feauters/country/presentation/manager/all_country_provider/all_country_state.dart';
 import 'package:country_app/feauters/country/presentation/pages/country_detail.dart';
@@ -74,6 +75,33 @@ class _CountryAllState extends ConsumerState<CountryAll> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.info_outline,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("About Country App"),
+                  content: const Text(
+                    "This app provides detailed information about all countries, "
+                    "including their capital, population, and region.\n\n"
+                    "Developed by: Your Name",
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("OK"),
+                    ),
+                  ],
+                ),
+              );
+            },
+          )
+        ],
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -229,6 +257,17 @@ class _CountryAllState extends ConsumerState<CountryAll> {
               : state is AllCountryErrorState
                   ? Center(child: Text(state.message))
                   : const Center(child: Text("No Data")),
+      floatingActionButton: ElevatedButton(
+        style:
+            ElevatedButton.styleFrom(backgroundColor: Colors.deepPurpleAccent),
+        onPressed: () {
+          Navigator.pushNamed(context, RouteNames.quiz);
+        },
+        child: Text(
+          "Start Quiz",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+      ),
     );
   }
 }
