@@ -29,6 +29,12 @@ class _CountryDetailPageState extends ConsumerState<CountryDetailPage> {
     });
   }
 
+  void _retryFetch() {
+    ref
+        .read(countryDetailNotifierProvider(widget.countryName).notifier)
+        .getCountryDetail(countryName: widget.countryName);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(countryDetailNotifierProvider(widget.countryName));
@@ -111,10 +117,24 @@ class _CountryDetailPageState extends ConsumerState<CountryDetailPage> {
                   )
                 : state is CountryDetailErrorState
                     ? Center(
-                        child: Text(
-                          state.message,
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 18),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              state.message,
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 18),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: _retryFetch,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.deepPurple,
+                              ),
+                              child: const Text("Qayta urinish"),
+                            ),
+                          ],
                         ),
                       )
                     : const Center(

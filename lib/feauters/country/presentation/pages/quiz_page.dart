@@ -108,6 +108,10 @@ class _QuizPageState extends ConsumerState<QuizPage> {
     );
   }
 
+  void _retryFetch() {
+    ref.read(allCountryNotifierProvider.notifier).getCountry();
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(allCountryNotifierProvider);
@@ -197,9 +201,38 @@ class _QuizPageState extends ConsumerState<QuizPage> {
                     ),
                   ),
                 )
-              : const Center(
-                  child: Text("Failed to load countries",
-                      style: TextStyle(fontSize: 18, color: Colors.red))),
+              : state is AllCountryErrorState
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            state.message,
+                            style: const TextStyle(
+                                color: Colors.red, fontSize: 18),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: _retryFetch,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                            ),
+                            child: const Text("Qayta urinish"),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const Center(
+                      child: Text("Failed to load countries",
+                          style: TextStyle(fontSize: 18, color: Colors.red))),
     );
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    _answerController.dispose();
+    super.dispose();
   }
 }

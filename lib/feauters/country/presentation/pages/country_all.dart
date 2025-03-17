@@ -60,6 +60,10 @@ class _CountryAllState extends ConsumerState<CountryAll> {
     });
   }
 
+  void _retryFetch() {
+    ref.read(allCountryNotifierProvider.notifier).getCountry();
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(allCountryNotifierProvider);
@@ -77,10 +81,7 @@ class _CountryAllState extends ConsumerState<CountryAll> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.info_outline,
-              color: Colors.white,
-            ),
+            icon: const Icon(Icons.info_outline, color: Colors.white),
             onPressed: () {
               showDialog(
                 context: context,
@@ -255,7 +256,27 @@ class _CountryAllState extends ConsumerState<CountryAll> {
                   ],
                 )
               : state is AllCountryErrorState
-                  ? Center(child: Text(state.message))
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            state.message,
+                            style: const TextStyle(
+                                color: Colors.red, fontSize: 18),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: _retryFetch,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                            ),
+                            child: const Text("Qayta urinish"),
+                          ),
+                        ],
+                      ),
+                    )
                   : const Center(child: Text("No Data")),
       floatingActionButton: ElevatedButton(
         style:
