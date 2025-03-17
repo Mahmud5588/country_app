@@ -14,6 +14,8 @@ class CountryAll extends ConsumerStatefulWidget {
 class _CountryAllState extends ConsumerState<CountryAll> {
   final TextEditingController _searchController = TextEditingController();
   List<dynamic> _filteredCountries = [];
+  String _selectedFilter = "Name"; // Default filter
+  bool _isAscending = true; // Sort order
 
   @override
   void initState() {
@@ -28,11 +30,32 @@ class _CountryAllState extends ConsumerState<CountryAll> {
       if (query.isEmpty) {
         _filteredCountries = countries;
       } else {
-        _filteredCountries = countries
-            .where((country) =>
-                country.name.common.toLowerCase().contains(query.toLowerCase()))
-            .toList();
+        _filteredCountries = countries.where((country) {
+          final name = country.name.common.toLowerCase();
+          final capital = country.capital.isNotEmpty
+              ? country.capital.first.toLowerCase()
+              : "";
+          final region = country.region.toLowerCase();
+
+          return (_selectedFilter == "Name" &&
+                  name.contains(query.toLowerCase())) ||
+              (_selectedFilter == "Capital" &&
+                  capital.contains(query.toLowerCase())) ||
+              (_selectedFilter == "Region" &&
+                  region.contains(query.toLowerCase()));
+        }).toList();
       }
+    });
+  }
+
+  void _sortByPopulation(List<dynamic> countries) {
+    setState(() {
+      _filteredCountries = List.from(countries);
+      _filteredCountries.sort((a, b) {
+        return _isAscending
+            ? a.population.compareTo(b.population)
+            : b.population.compareTo(a.population);
+      });
     });
   }
 
@@ -43,7 +66,7 @@ class _CountryAllState extends ConsumerState<CountryAll> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "All Countries",
+          "Countries",
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -68,18 +91,54 @@ class _CountryAllState extends ConsumerState<CountryAll> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: "Search for a country...",
-                          prefixIcon: const Icon(Icons.search,
-                              color: Colors.deepPurple),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: "Search...",
+                                prefixIcon: const Icon(Icons.search,
+                                    color: Colors.deepPurple),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onChanged: (query) =>
+                                  _filterCountries(query, state.countries),
+                            ),
                           ),
-                        ),
-                        onChanged: (query) =>
-                            _filterCountries(query, state.countries),
+                          const SizedBox(width: 10),
+                          DropdownButton<String>(
+                            value: _selectedFilter,
+                            items: ["Name", "Capital", "Region"]
+                                .map((filter) => DropdownMenuItem(
+                                      value: filter,
+                                      child: Text(filter),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  _selectedFilter = value;
+                                  _filterCountries(
+                                      _searchController.text, state.countries);
+                                });
+                              }
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(_isAscending
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward),
+                            onPressed: () {
+                              setState(() {
+                                _isAscending = !_isAscending;
+                                _sortByPopulation(state.countries);
+                              });
+                            },
+                          ),
+                        ],
                       ),
                     ),
                     Expanded(
@@ -100,6 +159,7 @@ class _CountryAllState extends ConsumerState<CountryAll> {
                             final country = _filteredCountries.isNotEmpty
                                 ? _filteredCountries[index]
                                 : state.countries[index];
+
                             return Card(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -127,11 +187,24 @@ class _CountryAllState extends ConsumerState<CountryAll> {
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18),
                                 ),
-                                subtitle: Text(
-                                  country.capital.isNotEmpty
-                                      ? country.capital.first
-                                      : "No Capital",
-                                  style: TextStyle(color: Colors.grey[700]),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      country.capital.isNotEmpty
+                                          ? "Capital: ${country.capital.first}"
+                                          : "No Capital",
+                                      style: TextStyle(color: Colors.grey[700]),
+                                    ),
+                                    Text(
+                                      "Population: ${country.population}",
+                                      style: TextStyle(color: Colors.grey[700]),
+                                    ),
+                                    Text(
+                                      "Region: ${country.region}",
+                                      style: TextStyle(color: Colors.grey[700]),
+                                    ),
+                                  ],
                                 ),
                                 trailing: const Icon(Icons.arrow_forward_ios,
                                     color: Colors.deepPurple),
