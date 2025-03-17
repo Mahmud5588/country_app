@@ -3,11 +3,13 @@ import 'package:dio/dio.dart';
 
 abstract class AllCountryRemoteDataSource {
   Future<List<CountryModel>> getAllCountry();
+
   Future<CountryModel> getCountryDetail({required String countryName});
 }
 
 class AllCountryRemoteDataSourceImpl implements AllCountryRemoteDataSource {
   Dio dio;
+
   AllCountryRemoteDataSourceImpl({required this.dio});
 
   @override
