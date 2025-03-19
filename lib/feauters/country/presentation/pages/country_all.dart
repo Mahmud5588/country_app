@@ -90,7 +90,7 @@ class _CountryAllState extends ConsumerState<CountryAll> {
                   content: const Text(
                     "This app provides detailed information about all countries, "
                     "including their capital, population, and region.\n\n"
-                    "Developed by: Your Name",
+                    "Developed by: Axmedov Maxmud and ChatGPT and Grok",
                   ),
                   actions: [
                     TextButton(
