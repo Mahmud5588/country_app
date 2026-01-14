@@ -1,16 +1,93 @@
-# country_app
+World Countries App 🌍
 
-A new Flutter project.
+A comprehensive mobile application built with Flutter that allows users to explore detailed information about countries worldwide. This project demonstrates modern mobile development practices, including RESTful API integration, efficient state management, and responsive UI design.
 
-## Getting Started
+📱 Features
 
-This project is a starting point for a Flutter application.
+Real-time Data Fetching: Retrieves up-to-date country information (Capital, Population, Region, Currencies, Languages, etc.) using a REST API.
 
-A few resources to get you started if this is your first Flutter project:
+Search Functionality: Efficient search feature to quickly find specific countries by name.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Detailed View: Comprehensive details screen for each country showing flags, borders, and demographics.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Optimized Performance: Implements data handling and caching mechanisms for a smooth user experience.
+
+Responsive Design: Adaptive UI that works seamlessly on different screen sizes.
+
+🛠️ Tech Stack
+
+Language: Dart
+
+Framework: Flutter
+
+Architecture: Clean Architecture
+
+State Management: BLoC / Cubit (or Provider/Riverpod - update based on your code)
+
+Networking: REST API (Dio / Http)
+
+Local Storage: Hive (for caching data)
+
+UI: Material Design & Cupertino
+
+🚀 Getting Started
+
+To get a local copy up and running, follow these simple steps.
+
+Prerequisites
+
+Flutter SDK installed (Installation Guide)
+
+Dart SDK
+
+An IDE (VS Code or Android Studio)
+
+Installation
+
+Clone the repository
+
+git clone [https://github.com/Mahmud5588/country_app.git](https://github.com/Mahmud5588/country_app.git)
+
+
+Navigate to the project directory
+
+cd country_app
+
+
+Install dependencies
+
+flutter pub get
+
+
+Run the app
+
+flutter run
+
+
+📸 Screenshots
+
+Home Screen
+
+Detail Screen
+
+Search Feature
+
+<img src="assets/screenshots/home.png" width="200" alt="Home Screen"/>
+
+<img src="assets/screenshots/detail.png" width="200" alt="Detail Screen"/>
+
+<img src="assets/screenshots/search.png" width="200" alt="Search"/>
+
+(Note: Please upload screenshots of your app to an assets/screenshots folder in your repo to make them visible here)
+
+📬 Contact
+
+Maxmud Axmedov - Mobile Developer
+
+LinkedIn: linkedin.com/in/maxmud-axmedov
+
+Email: axmedovmaxmud839@gmail.com
+
+GitHub: github.com/Mahmud5588
+
+This project was developed to demonstrate expertise in Flutter development and API integration.
