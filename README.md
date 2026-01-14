@@ -1,84 +1,159 @@
-World Countries App 🌍
+World Countries & Quiz App 🌍
 
-A comprehensive mobile application built with Flutter that allows users to explore detailed information about countries worldwide. This project demonstrates modern mobile development practices, including RESTful API integration, efficient state management, and responsive UI design.
+A feature-rich Flutter application that allows users to explore detailed information about every country in the world and test their geography knowledge with an integrated Quiz mode.
 
-📱 Features
+Unlike simple directory apps, this project implements advanced filtering, sorting, and a gamified learning experience, powered by Riverpod for state management and Clean Architecture principles.
 
-Real-time Data Fetching: Retrieves up-to-date country information (Capital, Population, Region, Currencies, Languages, etc.) using a REST API.
+🚀 Key Features (Real Implementation)
 
-Search Functionality: Efficient search feature to quickly find specific countries by name.
+1. 🔍 Advanced Search & Filtering
 
-Detailed View: Comprehensive details screen for each country showing flags, borders, and demographics.
+The app goes beyond simple name search. Users can filter the country list dynamically by:
 
-Optimized Performance: Implements data handling and caching mechanisms for a smooth user experience.
+Country Name
 
-Responsive Design: Adaptive UI that works seamlessly on different screen sizes.
+Capital City
 
-🛠️ Tech Stack
+Region (e.g., Asia, Europe)
 
-Language: Dart
+2. 📊 Sorting Functionality
 
-Framework: Flutter
+Users can organize the country list to compare demographics:
 
-Architecture: Clean Architecture
+Sort by Population: Toggle between Ascending and Descending order to see the most or least populated countries instantly.
 
-State Management: BLoC / Cubit (or Provider/Riverpod - update based on your code)
+3. 🧠 Interactive Quiz Mode
 
-Networking: REST API (Dio / Http)
+A built-in educational game to test knowledge:
 
-Local Storage: Hive (for caching data)
+Timed Challenge: 60-second countdown timer.
 
-UI: Material Design & Cupertino
+Capital Guessing: Random questions asking for the capital of a specific country.
 
-🚀 Getting Started
+Score Tracking: Real-time tracking of Correct vs. Wrong answers.
 
-To get a local copy up and running, follow these simple steps.
+Results: Summary dialog showing performance after the timer ends.
 
-Prerequisites
+4. 📄 Detailed Country Insights
 
-Flutter SDK installed (Installation Guide)
+Tapping on a country reveals comprehensive data fetched from the API:
 
-Dart SDK
+Geography: Region, Subregion, Area (km²), and Coordinates.
 
-An IDE (VS Code or Android Studio)
+Demographics: Population and Demonyms.
 
-Installation
+Politics: UN Membership status, Independence status.
 
-Clone the repository
+Travel Info: Currency, Timezones, Languages, and Driving Side.
 
-git clone [https://github.com/Mahmud5588/country_app.git](https://github.com/Mahmud5588/country_app.git)
+Maps: Direct links to Google Maps and OpenStreetMaps.
 
+5. 🛠 Robust Error Handling
 
-Navigate to the project directory
+The app handles network states gracefully (as seen in AllCountryRemoteDataSourceImpl):
 
-cd country_app
+Connection Timeouts: User-friendly messages for slow networks.
 
+No Internet: Detects socket exceptions and notifies the user.
 
-Install dependencies
+Server Errors: Handles 404/500 status codes properly.
 
-flutter pub get
+🏗 Tech Stack & Architecture
 
+This project is built using Clean Architecture to ensure scalability and testability.
 
-Run the app
+Category
 
-flutter run
+Technology
 
+Usage in Code
 
-📸 Screenshots
+Language
 
-Home Screen
+Dart
 
-Detail Screen
+Core logic
 
-Search Feature
+Framework
 
-<img src="assets/screenshots/home.png" width="200" alt="Home Screen"/>
+Flutter
 
-<img src="assets/screenshots/detail.png" width="200" alt="Detail Screen"/>
+UI Development
 
-<img src="assets/screenshots/search.png" width="200" alt="Search"/>
+State Management
 
-(Note: Please upload screenshots of your app to an assets/screenshots folder in your repo to make them visible here)
+Riverpod
+
+Used ConsumerStatefulWidget, StateNotifierProvider for reactive UI updates (AllCountryNotifier, CountryDetailNotifier).
+
+Networking
+
+Dio
+
+Advanced HTTP client for fetching data from restcountries.com.
+
+Data Source
+
+REST API
+
+https://restcountries.com/v3.1/all
+
+Architecture
+
+Clean Arch
+
+Separated into Domain (Entities, UseCases), Data (Models, Repositories), and Presentation (Pages, Providers).
+
+UI Components
+
+Material 3
+
+Card, AnimatedOpacity, LinearGradient, ClipRRect for modern aesthetics.
+
+📱 Application Flow
+
+Splash/Home: Loads all countries immediately upon opening (using Future.microtask).
+
+Home Screen (CountryAll):
+
+Displays a list of countries with Flags, Names, Capitals, and Population.
+
+Search Bar: Filters the list in real-time.
+
+Dropdown: Changes the filter type (Name/Capital/Region).
+
+Sort Button: Reorders the list by population.
+
+Floating Action Button: Launches the Quiz Page.
+
+Detail Screen (CountryDetailPage):
+
+Fetches specific country details using countryName.
+
+Displays data with a smooth fade-in animation (AnimatedOpacity).
+
+Includes a "Retry" button if the network request fails.
+
+Quiz Screen (QuizPage):
+
+Randomly selects countries from the loaded list.
+
+Validates user input against the actual capital city.
+
+📂 Project Structure
+
+lib/
+├── core/
+│   └── route/          # Route names and generators
+├── features/
+│   └── country/
+│       ├── data/       # Data sources, Models, Repositories Implementation
+│       ├── domain/     # Entities, Repositories Interfaces, UseCases
+│       └── presentation/
+│           ├── manager/ # Riverpod Providers & Notifiers
+│           └── pages/   # UI Screens (CountryAll, CountryDetail, QuizPage)
+└── main.dart           # App Entry point with ProviderScope
+
 
 📬 Contact
 
@@ -86,8 +161,8 @@ Maxmud Axmedov - Mobile Developer
 
 LinkedIn: linkedin.com/in/maxmud-axmedov
 
-Email: axmedovmaxmud839@gmail.com
-
 GitHub: github.com/Mahmud5588
 
-This project was developed to demonstrate expertise in Flutter development and API integration.
+Email: axmedovmaxmud839@gmail.com
+
+Developed with ❤️ using Flutter and Riverpod.
