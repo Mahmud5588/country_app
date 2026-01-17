@@ -1,9 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:country_app/core/route/route_names.dart';
 import 'package:country_app/feauters/country/presentation/manager/all_country_provider/all_country_provider.dart';
 import 'package:country_app/feauters/country/presentation/manager/all_country_provider/all_country_state.dart';
 import 'package:country_app/feauters/country/presentation/pages/country_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CountryAll extends ConsumerStatefulWidget {
   const CountryAll({super.key});
@@ -15,8 +18,7 @@ class CountryAll extends ConsumerStatefulWidget {
 class _CountryAllState extends ConsumerState<CountryAll> {
   final TextEditingController _searchController = TextEditingController();
   List<dynamic> _filteredCountries = [];
-  String _selectedFilter = "Name"; // Default filter
-  bool _isAscending = true; // Sort order
+  String _query = "";
 
   @override
   void initState() {
@@ -28,40 +30,16 @@ class _CountryAllState extends ConsumerState<CountryAll> {
 
   void _filterCountries(String query, List<dynamic> countries) {
     setState(() {
+      _query = query;
       if (query.isEmpty) {
         _filteredCountries = countries;
       } else {
         _filteredCountries = countries.where((country) {
           final name = country.name.common.toLowerCase();
-          final capital = country.capital.isNotEmpty
-              ? country.capital.first.toLowerCase()
-              : "";
-          final region = country.region.toLowerCase();
-
-          return (_selectedFilter == "Name" &&
-                  name.contains(query.toLowerCase())) ||
-              (_selectedFilter == "Capital" &&
-                  capital.contains(query.toLowerCase())) ||
-              (_selectedFilter == "Region" &&
-                  region.contains(query.toLowerCase()));
+          return name.contains(query.toLowerCase());
         }).toList();
       }
     });
-  }
-
-  void _sortByPopulation(List<dynamic> countries) {
-    setState(() {
-      _filteredCountries = List.from(countries);
-      _filteredCountries.sort((a, b) {
-        return _isAscending
-            ? a.population.compareTo(b.population)
-            : b.population.compareTo(a.population);
-      });
-    });
-  }
-
-  void _retryFetch() {
-    ref.read(allCountryNotifierProvider.notifier).getCountry();
   }
 
   @override
@@ -69,226 +47,211 @@ class _CountryAllState extends ConsumerState<CountryAll> {
     final state = ref.watch(allCountryNotifierProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F7), // Ko'zni charchatmaydigan fon
       appBar: AppBar(
-        title: const Text(
-          "Countries",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Text(
+          "Dunyo Mamlakatlari",
+          style: GoogleFonts.poppins(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 22,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline, color: Colors.white),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text("About Country App"),
-                  content: const Text(
-                    "This app provides detailed information about all countries, "
-                    "including their capital, population, and region.\n\n"
-                    "Developed by: Axmedov Maxmud and ChatGPT and Grok",
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("OK"),
-                    ),
-                  ],
-                ),
-              );
-            },
+            icon: const Icon(Icons.quiz_rounded, color: Colors.deepPurple),
+            onPressed: () => Navigator.pushNamed(context, RouteNames.quiz),
           )
         ],
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.deepPurple, Colors.blueAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      ),
+      body: Column(
+        children: [
+          _buildSearchBar(state),
+          Expanded(
+            child: _buildBody(state),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(AllCountryState state) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: "Mamlakat nomini qidiring...",
+          prefixIcon: const Icon(Icons.search, color: Colors.grey),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        onChanged: (query) {
+          if (state is AllCountryLoadedState) {
+            _filterCountries(query, state.countries);
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildBody(AllCountryState state) {
+    if (state is AllCountryLoadingState) {
+      return _buildShimmerList();
+    } else if (state is AllCountryLoadedState) {
+      final displayList = _query.isEmpty ? state.countries : _filteredCountries;
+      
+      if (displayList.isEmpty) {
+         return Center(child: Text("Ma'lumot topilmadi", style: GoogleFonts.poppins()));
+      }
+
+      return ListView.builder(
+        padding: const EdgeInsets.only(top: 10, bottom: 20),
+        itemCount: displayList.length,
+        itemBuilder: (context, index) {
+          final country = displayList[index];
+          return _buildCountryCard(country);
+        },
+      );
+    } else if (state is AllCountryErrorState) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 60, color: Colors.redAccent),
+            const SizedBox(height: 10),
+            Text(state.message, textAlign: TextAlign.center),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => ref.read(allCountryNotifierProvider.notifier).getCountry(),
+              child: const Text("Qayta urinish"),
+            ),
+          ],
+        ),
+      );
+    }
+    return const SizedBox();
+  }
+
+  Widget _buildCountryCard(dynamic country) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CountryDetailPage(countryName: country.name.common),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              children: [
+                Hero(
+                  tag: country.name.common,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(
+                      imageUrl: country.flags.png,
+                      width: 80,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(color: Colors.white),
+                      ),
+                      errorWidget: (context, url, error) => const Icon(Icons.flag),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        country.name.common,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        country.capital.isNotEmpty ? country.capital.first : "Poytaxt yo'q",
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                       Text(
+                        country.region,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.deepPurpleAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
+              ],
             ),
           ),
         ),
       ),
-      body: state is AllCountryLoadingState
-          ? const Center(child: CircularProgressIndicator())
-          : state is AllCountryLoadedState
-              ? Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              decoration: InputDecoration(
-                                hintText: "Search...",
-                                prefixIcon: const Icon(Icons.search,
-                                    color: Colors.deepPurple),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              onChanged: (query) =>
-                                  _filterCountries(query, state.countries),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          DropdownButton<String>(
-                            value: _selectedFilter,
-                            items: ["Name", "Capital", "Region"]
-                                .map((filter) => DropdownMenuItem(
-                                      value: filter,
-                                      child: Text(filter),
-                                    ))
-                                .toList(),
-                            onChanged: (value) {
-                              if (value != null) {
-                                setState(() {
-                                  _selectedFilter = value;
-                                  _filterCountries(
-                                      _searchController.text, state.countries);
-                                });
-                              }
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(_isAscending
-                                ? Icons.arrow_upward
-                                : Icons.arrow_downward),
-                            onPressed: () {
-                              setState(() {
-                                _isAscending = !_isAscending;
-                                _sortByPopulation(state.countries);
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.white, Colors.blueGrey],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(8.0),
-                          itemCount: _filteredCountries.isNotEmpty
-                              ? _filteredCountries.length
-                              : state.countries.length,
-                          itemBuilder: (context, index) {
-                            final country = _filteredCountries.isNotEmpty
-                                ? _filteredCountries[index]
-                                : state.countries[index];
+    );
+  }
 
-                            return Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              elevation: 4,
-                              margin: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 12),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.all(12),
-                                leading: Hero(
-                                  tag: country.flags.png,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(
-                                      country.flags.png,
-                                      width: 50,
-                                      height: 50,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                title: Text(
-                                  country.name.common,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      country.capital.isNotEmpty
-                                          ? "Capital: ${country.capital.first}"
-                                          : "No Capital",
-                                      style: TextStyle(color: Colors.grey[700]),
-                                    ),
-                                    Text(
-                                      "Population: ${country.population}",
-                                      style: TextStyle(color: Colors.grey[700]),
-                                    ),
-                                    Text(
-                                      "Region: ${country.region}",
-                                      style: TextStyle(color: Colors.grey[700]),
-                                    ),
-                                  ],
-                                ),
-                                trailing: const Icon(Icons.arrow_forward_ios,
-                                    color: Colors.deepPurple),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => CountryDetailPage(
-                                        countryName: country.name.common,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              : state is AllCountryErrorState
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            state.message,
-                            style: const TextStyle(
-                                color: Colors.red, fontSize: 18),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: _retryFetch,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.deepPurple,
-                            ),
-                            child: const Text("Qayta urinish"),
-                          ),
-                        ],
-                      ),
-                    )
-                  : const Center(child: Text("No Data")),
-      floatingActionButton: ElevatedButton(
-        style:
-            ElevatedButton.styleFrom(backgroundColor: Colors.deepPurpleAccent),
-        onPressed: () {
-          Navigator.pushNamed(context, RouteNames.quiz);
-        },
-        child: Text(
-          "Start Quiz",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-      ),
+  Widget _buildShimmerList() {
+    return ListView.builder(
+      itemCount: 10,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      itemBuilder: (context, index) {
+        return Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+        );
+      },
     );
   }
 }
